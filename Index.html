@@ -1,10 +1,17 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Pro Heart Animation</title>
+
     <style>
+
         * {
             margin: 0;
             padding: 0;
@@ -12,7 +19,7 @@
         }
 
         body {
-            background-color: #000000; /* Pure black jaisa image me hai */
+            background-color: #000000;
             height: 100vh;
             display: flex;
             justify-content: center;
@@ -26,24 +33,35 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            /* Smooth heartbeat scaling ke liye */
             transition: transform 0.1s ease-in-out;
         }
 
-        /* Final Heartbeat Animation */
         .beating {
             animation: heartbeat 1.5s infinite;
         }
 
         @keyframes heartbeat {
-            0% { transform: translate(-50%, -50%) scale(1); }
-            15% { transform: translate(-50%, -50%) scale(1.05); }
-            30% { transform: translate(-50%, -50%) scale(1); }
-            45% { transform: translate(-50%, -50%) scale(1.05); }
-            100% { transform: translate(-50%, -50%) scale(1); }
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+
+            15% {
+                transform: translate(-50%, -50%) scale(1.05);
+            }
+
+            30% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+
+            45% {
+                transform: translate(-50%, -50%) scale(1.05);
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
         }
 
-        /* Modern Glass Button */
         .btn-wrapper {
             position: absolute;
             bottom: 60px;
@@ -82,178 +100,203 @@
             pointer-events: none;
             transform: translateY(20px);
         }
+
     </style>
+
 </head>
+
 <body>
 
     <canvas id="heartCanvas"></canvas>
-    
+
     <div class="btn-wrapper" id="btnWrapper">
         <button id="magicBtn">Click Me</button>
     </div>
 
     <script>
-        // =========================================================================
-        // ⏱️ TIMER AND SPEED CONTROLS (BHAI YAHAN SE TUM SPEED ADJUST KAR SAKTE HO)
-        // =========================================================================
-        
-        // 1. Ek line draw hone me kitna time lagega (Milliseconds me). 
-        // 80 rakha hai taaki 120 lines total ~10 seconds me complete ho.
-        const LINE_DRAW_SPEED_MS = 85; 
-        
-        // 2. Stars banne ke baad bahar ki red outline kitni fast banegi.
-        const OUTLINE_DRAW_SPEED_MS = 30; 
-        
-        // =========================================================================
+
+        const LINE_DRAW_SPEED_MS = 85;
+
+        const OUTLINE_DRAW_SPEED_MS = 30;
 
         const canvas = document.getElementById('heartCanvas');
         const ctx = canvas.getContext('2d');
         const magicBtn = document.getElementById('magicBtn');
         const btnWrapper = document.getElementById('btnWrapper');
 
-        const TOTAL_LINES = 120; // Exact python code jaisa
-        let points = [];
-        const scale = 17; // Size of the heart
-        let centerX, centerY;
-        let originYOffset; 
+        const TOTAL_LINES = 120;
 
+        let points = [];
+        const scale = 17;
+        let centerX, centerY;
+        let originYOffset;
         let currentLine = 0;
         let outlineStep = 0;
 
-        // Resize handler
         function resize() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
+
             centerX = canvas.width / 2;
             centerY = canvas.height / 2;
-            // Origin point set kiya hai jahan se lines nikalengi (thora upar center se)
-            originYOffset = centerY - (3 * scale); 
+
+            originYOffset = centerY - (3 * scale);
         }
+
         window.addEventListener('resize', resize);
         resize();
 
-        // Calculate all 120 points mathematically
         function calculatePoints() {
             points = [];
+
             for (let i = 0; i < TOTAL_LINES; i++) {
-                // Angle calculations clockwise
+
                 const angle = i * (Math.PI * 2) / TOTAL_LINES;
-                
-                // Math formulas for heart shape
+
                 const x = 16 * Math.pow(Math.sin(angle), 3);
+
                 const y = -(13 * Math.cos(angle) - 5 * Math.cos(2 * angle) - 2 * Math.cos(3 * angle) - Math.cos(4 * angle));
-                
-                points.push({ x: x * scale, y: y * scale });
+
+                points.push({
+                    x: x * scale,
+                    y: y * scale
+                });
             }
         }
 
-        // Draw the mini star (8-point asterisk) exactly like Python's forward/backward logic
         function drawStarAt(x, y, size) {
+
             ctx.save();
+
             ctx.translate(x, y);
+
             ctx.beginPath();
+
             for (let i = 0; i < 8; i++) {
+
                 ctx.moveTo(0, 0);
                 ctx.lineTo(0, -size);
-                ctx.rotate((Math.PI * 2) / 8); // Right 45 degrees
+
+                ctx.rotate((Math.PI * 2) / 8);
             }
+
             ctx.strokeStyle = '#ff2a5f';
             ctx.lineWidth = 1.5;
             ctx.stroke();
+
             ctx.restore();
         }
 
-        // Main Animation Loop
         function animateLines() {
-            // Clear canvas har frame me fresh glow ke liye
+
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
+
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
-            // 1. Draw all lines and stars up to current step
             for (let i = 0; i < currentLine; i++) {
+
                 const targetX = centerX + points[i].x;
                 const targetY = centerY + points[i].y;
 
-                // Glowing thin line
                 ctx.beginPath();
+
                 ctx.moveTo(centerX, originYOffset);
                 ctx.lineTo(targetX, targetY);
-                ctx.strokeStyle = 'rgba(255, 26, 85, 0.3)'; // Faint trail
+
+                ctx.strokeStyle = 'rgba(255, 26, 85, 0.3)';
                 ctx.lineWidth = 1;
                 ctx.stroke();
 
-                // Draw Star at the end
                 drawStarAt(targetX, targetY, 6);
             }
 
-            // Next logic
             if (currentLine < TOTAL_LINES) {
+
                 currentLine++;
-                // Use timer variable for slow drawing
+
                 setTimeout(animateLines, LINE_DRAW_SPEED_MS);
+
             } else {
-                // Phase 2: Jab stars poore ho jayein toh outline start karo
+
                 animateOutline();
             }
         }
 
         function animateOutline() {
+
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Draw lines and stars first (Background me)
+
             for (let i = 0; i < TOTAL_LINES; i++) {
+
                 const targetX = centerX + points[i].x;
                 const targetY = centerY + points[i].y;
-                
+
                 ctx.beginPath();
+
                 ctx.moveTo(centerX, originYOffset);
                 ctx.lineTo(targetX, targetY);
+
                 ctx.strokeStyle = 'rgba(255, 26, 85, 0.3)';
                 ctx.lineWidth = 1;
                 ctx.stroke();
+
                 drawStarAt(targetX, targetY, 6);
             }
 
-            // Draw Full Outline clockwise
             ctx.beginPath();
-            ctx.moveTo(centerX + points[0].x, centerY + points[0].y);
-            
+
+            ctx.moveTo(
+                centerX + points[0].x,
+                centerY + points[0].y
+            );
+
             for (let i = 1; i <= outlineStep; i++) {
-                ctx.lineTo(centerX + points[i].x, centerY + points[i].y);
+
+                ctx.lineTo(
+                    centerX + points[i].x,
+                    centerY + points[i].y
+                );
             }
-            
-            // Pro Neon Red Glowing Effect
+
             ctx.strokeStyle = '#ff1a55';
             ctx.lineWidth = 3;
             ctx.shadowBlur = 20;
             ctx.shadowColor = '#ff1a55';
+
             ctx.stroke();
-            
-            // Reset shadow to avoid messing other drawings
-            ctx.shadowBlur = 0; 
+
+            ctx.shadowBlur = 0;
 
             if (outlineStep < TOTAL_LINES - 1) {
+
                 outlineStep++;
-                setTimeout(animateOutline, OUTLINE_DRAW_SPEED_MS);
+
+                setTimeout(
+                    animateOutline,
+                    OUTLINE_DRAW_SPEED_MS
+                );
+
             } else {
-                // Final touches - Heartbeat effect start
+
                 canvas.classList.add('beating');
             }
         }
 
-        // Button Click Event
         magicBtn.addEventListener('click', () => {
-            btnWrapper.classList.add('hide'); 
+
+            btnWrapper.classList.add('hide');
+
             calculatePoints();
+
             currentLine = 0;
             outlineStep = 0;
-            
-            // Start slowly
+
             setTimeout(animateLines, 300);
         });
 
     </script>
+
 </body>
+
 </html>
